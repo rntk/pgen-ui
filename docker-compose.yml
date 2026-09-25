@@ -1,0 +1,14 @@
+services:
+  prompt-constructor:
+    build: .
+    container_name: prompt-constructor
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount host directories for prompt persistence
+      - ./data/prompts:/app/data/prompts
+      - ./data/appendices:/app/data/appendices
+    environment:
+      - PORT=8000
+      - HOST=0.0.0.0
+    restart: unless-stopped

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prompt Constructor</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 20h9"/>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="app-title">Prompt Constructor</h1>
+          <span class="app-subtitle">Modular Markdown Prompt Composer</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="toggle-preview-btn" class="btn btn-secondary" title="Toggle Live Preview (Ctrl+P)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <span id="preview-btn-label">Preview</span>
+        </button>
+
+        <button id="download-btn" class="btn btn-secondary" title="Download as .md file">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Export
+        </button>
+
+        <button id="clear-btn" class="btn btn-secondary" title="Clear Editor">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+          Clear
+        </button>
+
+        <button id="copy-btn" class="btn btn-primary" title="Copy prompt to clipboard (Ctrl+Enter)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          Copy Prompt
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="main-layout">
+      <!-- Left Panel: Library of Prompts & Appendices -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <div class="search-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" id="library-search" placeholder="Search prompts & appendices...">
+            <button id="search-clear" class="btn-icon hidden" title="Clear search">&times;</button>
+          </div>
+
+          <!-- Category Filter Tabs -->
+          <div class="tabs-nav">
+            <button class="tab-btn active" data-tab="all">All (<span id="count-all">0</span>)</button>
+            <button class="tab-btn" data-tab="prompts">Prompts (<span id="count-prompts">0</span>)</button>
+            <button class="tab-btn" data-tab="appendices">Appendices (<span id="count-appendices">0</span>)</button>
+          </div>
+        </div>
+
+        <div class="sidebar-actions-bar">
+          <span class="library-title" id="library-section-label">Library</span>
+          <div class="sidebar-btn-group">
+            <button id="new-prompt-btn" class="btn btn-sm btn-outline" title="Create New Main Prompt">
+              + New Prompt
+            </button>
+            <button id="new-appendix-btn" class="btn btn-sm btn-outline" title="Create New Small Appendix">
+              + New Appendix
+            </button>
+          </div>
+        </div>
+
+        <!-- Scrollable List of Items -->
+        <div class="items-list" id="items-list">
+          <div class="loading-spinner">Loading prompt library...</div>
+        </div>
+      </aside>
+
+      <!-- Center / Right Panel: Prompt Construction Area -->
+      <section class="editor-section">
+        <!-- Editor Toolbar -->
+        <div class="editor-toolbar">
+          <div class="toolbar-left">
+            <span class="editor-label">Prompt Workbench</span>
+            <div class="stats-badge">
+              <span id="stat-words">0 words</span>
+              <span class="stat-divider">•</span>
+              <span id="stat-chars">0 chars</span>
+              <span class="stat-divider">•</span>
+              <span id="stat-tokens">~0 tokens</span>
+              <span class="stat-divider">•</span>
+              <span id="stat-lines">1 line</span>
+            </div>
+          </div>
+
+          <div class="toolbar-right">
+            <button id="save-as-btn" class="btn btn-sm btn-secondary" title="Save current prompt as file">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+              </svg>
+              Save As File...
+            </button>
+          </div>
+        </div>
+
+        <!-- Editor and Preview Workspace -->
+        <div class="workbench-container" id="workbench-container">
+          <!-- Textarea Edit Area -->
+          <div class="editor-wrapper" id="editor-wrapper">
+            <textarea
+              id="prompt-editor"
+              class="prompt-textarea"
+              placeholder="Pick a prompt from the sidebar to start, or type directly here...&#10;&#10;Tip: Click '+ Append' on any prompt or appendix snippet to chain them together."
+              spellcheck="false"
+            ></textarea>
+          </div>
+
+          <!-- Live Markdown Preview (Split or Full) -->
+          <div class="preview-wrapper hidden" id="preview-wrapper">
+            <div class="preview-header">
+              <span>Rendered Preview</span>
+            </div>
+            <div class="preview-content" id="preview-content">
+              <!-- Rendered Markdown will appear here -->
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Modal: Item Detail / Preview Modal -->
+    <div class="modal-backdrop hidden" id="item-modal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div>
+            <span class="badge" id="modal-type-badge">Prompt</span>
+            <h2 id="modal-title" class="modal-title">Item Title</h2>
+            <span id="modal-filename" class="modal-filename">filename.md</span>
+          </div>
+          <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <pre id="modal-content" class="modal-pre"></pre>
+        </div>
+        <div class="modal-footer">
+          <button id="modal-delete-btn" class="btn btn-danger">Delete</button>
+          <div class="modal-footer-right">
+            <button id="modal-insert-btn" class="btn btn-secondary">Insert at Cursor</button>
+            <button id="modal-append-btn" class="btn btn-secondary">+ Append to Prompt</button>
+            <button id="modal-replace-btn" class="btn btn-primary">Replace Workbench</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Save As File -->
+    <div class="modal-backdrop hidden" id="save-modal">
+      <div class="modal-card modal-sm">
+        <div class="modal-header">
+          <h2 class="modal-title">Save Prompt to Library</h2>
+          <button class="modal-close-btn" id="save-modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="save-form">
+            <div class="form-group">
+              <label for="save-type">Target Directory / Type</label>
+              <select id="save-type" class="form-control">
+                <option value="prompts">Main Prompt (data/prompts/)</option>
+                <option value="appendices">Small Appendix (data/appendices/)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="save-title">Title</label>
+              <input type="text" id="save-title" class="form-control" placeholder="e.g. Database Optimization Expert" required>
+            </div>
+            <div class="form-group">
+              <label for="save-filename">Filename</label>
+              <input type="text" id="save-filename" class="form-control" placeholder="e.g. database_optimizer.md" required>
+            </div>
+            <div class="form-group">
+              <label for="save-desc">Description (Optional)</label>
+              <input type="text" id="save-desc" class="form-control" placeholder="Brief summary of what this does...">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button id="save-cancel-btn" class="btn btn-secondary">Cancel</button>
+          <button id="save-submit-btn" class="btn btn-primary">Save to Library</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
